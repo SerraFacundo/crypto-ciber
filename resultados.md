@@ -61,6 +61,38 @@ español da 26.5 y 28.3 para los controles 4 y 18, y 15.1 a 21.1 para varios
 pendientes. Los pendientes se parecen al español **más** que los César ya
 resueltos. A este largo la estadística no separa nada.
 
-Conclusión metodológica: los 12 restantes no se rompen con más fuerza bruta.
-Se rompen con criptoanálisis manual apoyado en el contexto — son 20 temas de
-ciberseguridad, y el vocabulario probable es acotado.
+Ronda final de ataques, todos con el control 18 resuelto al lado:
+
+| Hipótesis | Control 18 | Pendientes |
+|---|---|---|
+| Vigenère con clave de palabra real (50 000 palabras) | 59.0 ✓ | 34–61 |
+| Desplazamiento distinto por palabra (k, k+p, k+2p…) | 91.8 ✓ | 24–63 |
+| Desplazamiento según el largo de cada palabra | 52.2 | 13–43 |
+| César progresivo por letra | ✓ | basura |
+| Texto en inglés bajo César | — | sin coincidencias |
+
+Y el generador de candidatos, leído a mano: sobre el control 18 la respuesta
+correcta sale en el puesto 10 con −10.3, perfectamente legible
+(`las 10 vulnerabl… en la web; … las enumera`). Sobre los pendientes el mejor
+candidato de los 25 llega a −22.7 (acertijo 9), −32.6 (2) y −62.0 (1). No hay
+nada legible. Con el mismo generador y el mismo juez, el control se resuelve y
+los pendientes no.
+
+## Conclusión
+
+Los 12 pendientes no son sustitución monoalfabética, ni ninguna de las
+variantes clásicas probadas. Un chequeo a mano en el acertijo 10 lo confirma:
+`pwnqj` es prefijo de `pwnqjwgn`, y ninguna asignación consistente con
+`fwnsqwwn` da tres palabras españolas a la vez.
+
+Quedan dos explicaciones, y no se distinguen desde acá:
+
+1. Usan un método fuera del repertorio clásico probado.
+2. El texto está corrompido. El archivo ya muestra daño en los acertijos que
+   sí se resolvieron: `traãico`, `Cadá`, `PLZ`, `Tecnologã`, `revs iones`,
+   `industia`, y el 15 directamente no descifra a español legible. Si los
+   pendientes tienen ese nivel de daño, ningún ataque los va a romper.
+
+Lo que corresponde hacer antes de seguir gastando cómputo: conseguir el
+archivo original de la cátedra, sin la corrupción de copiado, y confirmar si
+los 20 usan el mismo método.
