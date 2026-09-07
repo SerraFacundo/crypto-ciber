@@ -3,7 +3,9 @@
 
 Fase 1: clasificar cada acertijo por Indice de Coincidencia (IC).
 Fase 2: romper los monoalfabeticos (Cesar / afin).
-Fase 3: romper los polialfabeticos (Vigenere).
+
+Rompe 8 de los 20. Los otros 12 resistieron 14 familias de cifra; el detalle
+de que se probo y con que evidencia esta en resultados.md.
 
 Sin dependencias externas. Ejecutar: python3 cripto.py
 """
@@ -161,89 +163,6 @@ def romper_afin(texto):
 
 
 # --------------------------------------------------------------------------
-# FASE 3 - Vigenere
-# --------------------------------------------------------------------------
-
-def ic_promedio_por_periodo(letras, m):
-    """IC promedio al partir el texto en m columnas.
-
-    Si m es el largo real de la clave, cada columna quedo cifrada con un
-    unico Cesar: vuelve a comportarse como espanol y el IC sube a ~0.077.
-    """
-    ics = []
-    for i in range(m):
-        col = letras[i::m]
-        n = len(col)
-        if n < 2:
-            continue
-        conteo = Counter(col)
-        ics.append(sum(c * (c - 1) for c in conteo.values()) / (n * (n - 1)))
-    return sum(ics) / len(ics) if ics else 0.0
-
-
-def estimar_largo_clave(texto, maximo=12):
-    """Friedman: prueba cada largo y devuelve los mejores por IC de columna."""
-    letras = normalizar(texto)
-    puntajes = [(ic_promedio_por_periodo(letras, m), m) for m in range(1, maximo + 1)]
-    puntajes.sort(reverse=True)
-    return puntajes
-
-
-def kasiski(texto, largo=3):
-    """Distancias entre trigramas repetidos. Sus divisores delatan la clave."""
-    letras = normalizar(texto)
-    posiciones = {}
-    for i in range(len(letras) - largo + 1):
-        posiciones.setdefault(letras[i:i + largo], []).append(i)
-    distancias = []
-    for pos in posiciones.values():
-        if len(pos) > 1:
-            distancias += [b - a for a, b in zip(pos, pos[1:])]
-    factores = Counter()
-    for d in distancias:
-        for f in range(2, 13):
-            if d % f == 0:
-                factores[f] += 1
-    return factores.most_common(5)
-
-
-def clave_vigenere(texto, m):
-    """Resuelve un Cesar independiente por columna, cada uno por chi2."""
-    letras = normalizar(texto)
-    clave = ""
-    for i in range(m):
-        col = letras[i::m]
-        mejor = min(range(26), key=lambda k: chi2(desplazar(col, k)))
-        clave += ABC[mejor]
-    return clave
-
-
-def descifrar_vigenere(texto, clave):
-    """Aplica la clave solo sobre a-z; el resto no consume posicion de clave."""
-    salida = []
-    j = 0
-    for ch in texto:
-        if ch.lower() in ABC:
-            k = ord(clave[j % len(clave)]) - 97
-            salida.append(desplazar(ch, k))
-            j += 1
-        else:
-            salida.append(ch)
-    return "".join(salida)
-
-
-def romper_vigenere(texto, maximo=12):
-    """Prueba los largos mas prometedores y devuelve el mejor descifrado."""
-    cands = []
-    for _, m in estimar_largo_clave(texto, maximo)[:6]:
-        clave = clave_vigenere(texto, m)
-        claro = descifrar_vigenere(texto, clave)
-        cands.append((puntaje(claro), m, clave, claro))
-    cands.sort()
-    return cands[0]
-
-
-# --------------------------------------------------------------------------
 
 def main():
     acertijos = cargar_acertijos()
@@ -265,7 +184,7 @@ def main():
     print("=" * 78)
     print("FASE 2 - Ataque monoalfabetico (Cesar, si falla afin)")
     print("=" * 78)
-    pendientes = []
+    sin_resolver = []
     for n, frase in sorted(acertijos.items()):
         sc, k, claro = romper_cesar(frase)
         if palabras_validas(claro) >= 2:
@@ -275,20 +194,22 @@ def main():
             if palabras_validas(claro_a) >= 2:
                 print(f"{n:>3} Afin a={a} b={b} -> {claro_a}")
             else:
-                pendientes.append(n)
+                sin_resolver.append(n)
 
     print()
-    print("=" * 78)
-    print("FASE 3 - Ataque polialfabetico (Vigenere) sobre los pendientes")
-    print("=" * 78)
-    for n in pendientes:
-        frase = acertijos[n]
-        sc, m, clave, claro = romper_vigenere(frase)
-        print(f"{n:>3} IC={indice_coincidencia(frase):.4f} "
-              f"largos={[m for _, m in estimar_largo_clave(frase)[:3]]} "
-              f"kasiski={kasiski(frase)}")
-        print(f"    clave='{clave}' (m={m}) -> {claro}")
+    print(f"Sin resolver: {sin_resolver}")
+    print("Resistieron 14 familias de cifra; ver resultados.md.")
+
+
+def demo():
+    """Un solo control: el acertijo 4 tiene que salir entero con Cesar 3."""
+    frase = cargar_acertijos()[4]
+    _, k, claro = romper_cesar(frase)
+    assert k == 3, k
+    assert claro.startswith("Dos llaves, una para cifrar"), claro
+    assert 0.06 < indice_coincidencia(frase) < 0.10, indice_coincidencia(frase)
+    print("ok")
 
 
 if __name__ == "__main__":
-    main()
+    demo() if "--check" in sys.argv else main()
