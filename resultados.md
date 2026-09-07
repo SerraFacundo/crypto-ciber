@@ -85,14 +85,32 @@ variantes clásicas probadas. Un chequeo a mano en el acertijo 10 lo confirma:
 `pwnqj` es prefijo de `pwnqjwgn`, y ninguna asignación consistente con
 `fwnsqwwn` da tres palabras españolas a la vez.
 
-Quedan dos explicaciones, y no se distinguen desde acá:
+La hipótesis de archivo corrupto quedó descartada: el texto es el original de
+la cátedra. Las erratas (`traãico`, `Cadá`, `PLZ`, `Tecnologã`, `revs iones`)
+vienen así de origen y no impidieron descifrar esos ocho.
 
-1. Usan un método fuera del repertorio clásico probado.
-2. El texto está corrompido. El archivo ya muestra daño en los acertijos que
-   sí se resolvieron: `traãico`, `Cadá`, `PLZ`, `Tecnologã`, `revs iones`,
-   `industia`, y el 15 directamente no descifra a español legible. Si los
-   pendientes tienen ese nivel de daño, ningún ataque los va a romper.
+Ronda de cierre, tapando huecos de mis propias herramientas:
 
-Lo que corresponde hacer antes de seguir gastando cómputo: conseguir el
-archivo original de la cátedra, sin la corrupción de copiado, y confirmar si
-los 20 usan el mismo método.
+| Hipótesis | Control 18 | Pendientes |
+|---|---|---|
+| Vigenère avanzando la clave en **todos** los caracteres, no solo letras | 91.8 ✓ | 36–66 |
+| Alfabeto con palabra clave, claves de hasta 22 letras y términos del dominio | 96.5 ✓ | 38–46 |
+| César sobre alfabeto de 27 letras (con ñ) | 67.9 ✓ | 22–47 |
+| César sobre alfabeto de 32 (vocales acentuadas incluidas) | 71.0 ✓ | 27–54 |
+
+Criptoanálisis manual del acertijo 11, el más corto (37 letras, 9 palabras):
+`mjyuy` tiene patrón 0‑1‑2‑3‑2, que en español da `tiene, puede, viene, siete,
+muere, duele, cosas, casos, playa, ojalá, quede, nueve, mirar, abrir`. Se
+probó cada una propagando el mapeo a `jr`, `kq`, `jxwq` y `kytr`, que comparten
+letras con ella. Ninguna cierra sin romper la biyección o exigir una palabra
+inexistente. Coincide con lo que dice el ataque automático.
+
+## Conclusión
+
+Con 14 familias de cifra descartadas, cada una verificada contra un control de
+respuesta conocida en la misma corrida, el criptoanálisis clásico no rompe
+estos 12. La respuesta honesta es que falta información sobre el método, no
+más cómputo.
+
+Los 8 resueltos alcanzan de sobra para el objetivo real de la consigna:
+elegir 1 tema principal y 2 secundarios.
