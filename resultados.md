@@ -29,19 +29,38 @@ que sí es inequívoca. Conviene confirmarlo con la cátedra antes de usarlo.
 
 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 13.
 
-Descartado hasta ahora, con evidencia:
+Todo ataque se corrió junto a un **control**: los acertijos 4 y 18, de
+plaintext ya conocido, mezclados entre los pendientes. Si el ataque no
+resuelve el control, su silencio sobre los pendientes no prueba nada.
 
-- **César** (26 desplazamientos) y **afín** (312 claves): fuerza bruta completa, sin resultado.
-- **Vigenère con clave de 1 a 4 letras**: fuerza bruta exhaustiva, sin resultado.
-- **Vigenère con clave compartida entre acertijos**: el IC por columnas queda plano en 0.044 para todo largo de clave de 1 a 12.
-- **Clave compartida entre acertijos**: el IC del texto combinado cae a 0.0442; cada acertijo tiene su propia clave.
-- **Transposición**: las frecuencias de letras en crudo no son las del español (chi² de 90 a 160 en los pendientes, contra 10 a 26 en los resueltos).
+Descartados, con el control resuelto en la misma corrida:
 
-Hipótesis viva: **sustitución con alfabeto derivado de una palabra clave**,
-distinta por acertijo. Es lo habitual en un ejercicio de cátedra y reduce el
-espacio de búsqueda de 26! a unas 50 000 claves, que sí se prueban todas.
+| Hipótesis | Cómo se probó | Control | Pendientes |
+|---|---|---|---|
+| César | 26 desplazamientos | 165.8 ✓ | — |
+| Afín | 312 claves | ✓ | — |
+| Vigenère, clave 1–4 | fuerza bruta exhaustiva | ✓ | basura |
+| Vigenère, clave 5–10 | escalada con puntaje de palabras | 165.8 ✓ | 44–80 |
+| Vigenère con reinicio por palabra | fuerza bruta 1–4 | 158.4 ✓ | 36–62 |
+| Beaufort y Beaufort variante | fuerza bruta 1–3 | 158.4 ✓ | 36–62 |
+| Autokey | fuerza bruta, primer 1–3 | ✓ | basura |
+| Alfabeto con palabra clave | 50 000 claves × 26 rotaciones × 2 sentidos | 165.8 ✓ | 38–72 |
+| Transposición | chi² del texto en crudo | — | 90–160, no es español |
+| Clave compartida entre acertijos | IC combinado y por columnas | — | 0.044, plano |
 
-Nota metodológica: el solver genérico de sustitución fue **descartado como
-juez**. Validado contra texto conocido, con frases de ~50 letras devuelve
-soluciones falsas con mejor puntaje que la verdadera. Un resultado suyo no
-prueba nada sin verificación independiente.
+**Sustitución arbitraria: no descartada, y es la hipótesis viva.** El límite
+acá no es la hipótesis sino el largo del texto. Los acertijos tienen de 37 a
+66 letras y todos los ataques estadísticos necesitan más:
+
+- El solver por patrones, validado contra texto conocido, devuelve soluciones falsas mejor puntuadas que la verdadera.
+- El modelo de cuadrigramas también se equivoca: sobre el acertijo 18 puntúa el texto verdadero peor que uno falso (−17.90 contra −17.47).
+- El recocido con juez combinado resuelve el control 4 (67.9) pero **no** el control 18 (−7.7), que es César y se sabe la respuesta.
+
+Un test de forma lo confirma: la distancia del perfil de frecuencias al
+español da 26.5 y 28.3 para los controles 4 y 18, y 15.1 a 21.1 para varios
+pendientes. Los pendientes se parecen al español **más** que los César ya
+resueltos. A este largo la estadística no separa nada.
+
+Conclusión metodológica: los 12 restantes no se rompen con más fuerza bruta.
+Se rompen con criptoanálisis manual apoyado en el contexto — son 20 temas de
+ciberseguridad, y el vocabulario probable es acotado.
